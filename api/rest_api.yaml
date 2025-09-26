@@ -1,0 +1,487 @@
+openapi: 3.0.0
+info:
+  title: Travel Blog API
+  description: API для социальной сети путешественников. Позволяет публиковать посты, комментировать, оценивать и подписываться на других пользователей.
+  version: 1.1.1
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+paths:
+  /posts/publish:
+    post:
+      summary: Публикация нового поста
+      tags:
+        - Posts
+      parameters:
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Идентификатор пользователя
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - text
+              properties:
+                title:
+                  type: string
+                  description: Заголовок поста
+                text:
+                  type: string
+                  description: Текст поста
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Фотографии поста (максимум 10 файлов)
+      responses:
+        '201':
+          description: Пост успешно опубликован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePostResponse'
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Пользователь не авторизован
+
+  /posts/{postID}:
+    put:
+      summary: Редактирование поста
+      description: Обновление заголовка, текста или фотографий поста. Можно редактировать только свои посты.
+      tags:
+        - Posts
+      parameters:
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: postID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Новый заголовок поста
+                text:
+                  type: string
+                  description: Новый текст поста
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Новые фотографии поста (старые будут заменены)
+      responses:
+        '200':
+          description: Пост успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePostResponse'
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Пользователь не авторизован
+        '403':
+          description: Попытка редактировать чужой пост
+        '404':
+          description: Пост не найден
+
+  /posts/comment:
+    post:
+      summary: Добавление комментария к посту
+      tags:
+        - Posts
+      parameters:
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - postID
+                - text
+              properties:
+                postID:
+                  type: string
+                  format: uuid
+                  description: Идентификатор поста
+                text:
+                  type: string
+                  description: Текст комментария
+      responses:
+        '201':
+          description: Комментарий успешно добавлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Пост не найден
+
+  /posts/comment/{commentID}:
+    put:
+      summary: Редактирование комментария
+      description: Изменение текста комментария. Можно редактировать только свои комментарии.
+      tags:
+        - Posts
+      parameters:
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: commentID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  description: Новый текст комментария
+      responses:
+        '200':
+          description: Комментарий успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Пользователь не авторизован
+        '403':
+          description: Попытка редактировать чужой комментарий
+        '404':
+          description: Комментарий не найден
+
+  /posts/react:
+    post:
+      summary: Добавление реакции на пост (лайк/дизлайк)
+      tags:
+        - Posts
+      parameters:
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - postID
+                - type
+              properties:
+                postID:
+                  type: string
+                  format: uuid
+                type:
+                  type: string
+                  enum: [like, dislike]
+                  description: Тип реакции
+      responses:
+        '200':
+          description: Реакция успешно учтена
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Пост не найден
+
+  /users/subscribe:
+    post:
+      summary: Подписка на другого пользователя
+      tags:
+        - Users
+      parameters:
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: string
+          description: ID пользователя, который подписывается (subscriberID)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - publisherID
+              properties:
+                publisherID:
+                  type: string
+                  description: ID пользователя, на которого подписываются
+      responses:
+        '200':
+          description: Подписка выполнена успешно
+        '400':
+          description: Неверные входные данные (например, попытка подписаться на самого себя)
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Пользователь не найден
+
+  /users/unsubscribe:
+    post:
+      summary: Отписка от пользователя
+      tags:
+        - Users
+      parameters:
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: string
+          description: ID пользователя, который отписывается (subscriberID)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - publisherID
+              properties:
+                publisherID:
+                  type: string
+                  description: ID пользователя, от которого отписываются
+      responses:
+        '200':
+          description: Отписка выполнена успешно
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Подписка не найдена
+
+  /places/search:
+    get:
+      summary: Поиск популярных мест для путешествий
+      tags:
+        - Places
+      parameters:
+        - name: place
+          in: query
+          description: Название места для поиска
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный поиск
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  places:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Place'
+
+  /posts/lenta:
+    get:
+      summary: Просмотр ленты постов
+      description: Возвращает ленту постов для заданного списка пользователей с пагинацией.
+      tags:
+        - Posts
+      parameters:
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: userIDS
+          in: query
+          description: Список ID пользователей, чьи посты нужно включить в ленту
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: next
+          in: query
+          description: Токен пагинации для получения следующей страницы
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Количество постов на странице (по умолчанию 20)
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: order
+          in: query
+          description: Порядок сортировки постов по времени публикации
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Успешный запрос ленты
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostFeedResponse'
+        '401':
+          description: Пользователь не авторизован
+
+components:
+  schemas:
+    CreatePostResponse:
+      type: object
+      properties:
+        postID:
+          type: string
+          format: uuid
+        title:
+          type: string
+        text:
+          type: string
+        photoUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+        createdAt:
+          type: string
+          format: date-time
+
+    Post:
+      type: object
+      properties:
+        userID:
+          type: string
+        postID:
+          type: string
+          format: uuid
+        title:
+          type: string
+        text:
+          type: string
+        photoUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+        reactions:
+          type: object
+          properties:
+            likes:
+              type: integer
+              minimum: 0
+            dislikes:
+              type: integer
+              minimum: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          description: Время последнего редактирования
+
+    Comment:
+      type: object
+      properties:
+        commentID:
+          type: string
+          format: uuid
+        userID:
+          type: string
+        postID:
+          type: string
+          format: uuid
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          description: Время последнего редактирования
+
+    Place:
+      type: object
+      properties:
+        placeID:
+          type: string
+          format: uuid
+        name:
+          type: string
+        country:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        popularityIndex:
+          type: number
+          description: Индекс популярности места (0-10)
+
+    PostFeedResponse:
+      type: object
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        next:
+          type: string
+          description: Токен для получения следующей страницы. Отсутствует, если это последняя страница.
+          nullable: true
