@@ -56,6 +56,21 @@
       - Реакции на чужие посты: 579 * 8Б = 4,6Кб/с
     - Подсистема поиска:
         - Просмотр рекомендации: 347 * (200 * 2Б + 50Б) = 156Мб/с
-      
-      
-        
+
+## Оценка использования дисков
+
+- Подсистема медиа
+    - Capacity: 5.8ГБ/с * 86400 * 365 = 182908ТБ(HDD: 5716; SSD-sata: 183; SSD-nVME: 6097)
+    - IOPS: 1160(HDD: 12; SSD-sata: 2; SSD-nVME: 1)
+    - Throughput: 5,8Гб/с (HDD: 58; SSD-sata: 12; SSD-nVME: 2)
+    - Total: HDD - 5716; SSD-sata - 183; SSD-nVME - 6097
+- Подсистема постов
+    - Capacity: 2,6Мб/с * 86400 * 365 = 82Тб(HDD: 3; SSD-sata: 1; SSD-nVME: 3)
+    - IOPS: 1160(HDD: 12; SSD-sata: 2; SSD-nVME: 1)
+    - Throughput: 2,6Мб/с (HDD: 1; SSD-sata: 1; SSD-nVME: 1)
+    - Total: HDD - 12; SSD-sata - 2; SSD-nVME - 3
+- Подсистема комментариев и реакций:
+    - Capacity: 240Кб/с * 86400 * 365 = 8Тб(HDD: 1; SSD-sata: 1; SSD-nVME: 1)
+    - IOPS: 810 (HDD: 9; SSD-sata: 1; SSD-nVME: 1)
+    - Throughput: 240Кб/с (HDD: 1; SSD-sata: 1; SSD-nVME: 1)
+    - Total: HDD - 9; SSD-sata - 1; SSD-nVME - 1
