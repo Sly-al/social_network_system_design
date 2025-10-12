@@ -1,6 +1,3 @@
-// Use DBML to define your database structure
-// Docs: https://dbml.dbdiagram.io/docs
-
 Table users {
   id uuid [primary key]
   username text [not null]
@@ -80,13 +77,3 @@ Table media {
     post_id
   }
 }
-
-// References
-Ref: posts.user_id > users.id
-Ref: media.post_id > posts.id [delete: cascade]
-Ref: likes.post_id > posts.id [delete: cascade]
-Ref: likes.user_id > users.id
-Ref: comments.post_id > posts.id [delete: cascade]
-Ref: comments.user_id > users.id
-Ref: follows.following_user_id > users.id [delete: cascade]
-Ref: follows.followed_user_id > users.id [delete: cascade]
