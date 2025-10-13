@@ -74,3 +74,16 @@
     - IOPS: 810 (HDD: 9; SSD-sata: 1; SSD-nVME: 1)
     - Throughput: 240Кб/с (HDD: 1; SSD-sata: 1; SSD-nVME: 1)
     - Total: HDD - 9; SSD-sata - 1; SSD-nVME - 1
+
+## Подсчёт хостов
+
+- Подсистема медиа(SSD-sata):
+    - Hosts = 316 / 2 = 158
+    - Hosts_with_replication = 158 * 2 = 316
+- Подсистема постов:
+    - Hosts = 2 / 1 = 2
+    - Hosts_with_replication = 2 * 3 = 6
+- Подсистема комментариев и реакций:
+    - Hosts = 1 / 1 = 1
+    - Hosts_with_replication = 1 * 3 = 3
+- Total: 325
