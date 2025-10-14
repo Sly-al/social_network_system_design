@@ -3,7 +3,7 @@
 // - replication factor 2
 //
 // Sharding:
-// - key based by post_id
+// - consistent hashing based on media id
 
 Table media {
   id uuid [primary key]
