@@ -1,3 +1,10 @@
+// Replication:
+// - master-slave (one sync + async)
+// - replication factor 3
+//
+// Sharding:
+// - key based by id
+
 Table users {
   id uuid [primary key]
   username text [not null]

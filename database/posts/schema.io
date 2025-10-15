@@ -1,3 +1,10 @@
+// Replication:
+// - master-slave (one sync + async)
+// - replication factor 3
+//
+// Sharding:
+// - key based by user_id
+
 Table posts {
   id uuid [primary key]
   title text

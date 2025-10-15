@@ -1,3 +1,10 @@
+// Replication:
+// - master-slave (async)
+// - replication factor 2
+//
+// Sharding:
+// - consistent hashing based on media id
+
 Table media {
   id uuid [primary key]
   post_id uuid [not null]
