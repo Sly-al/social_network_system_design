@@ -1,0 +1,33 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User", "A user of the social media platform")
+
+Container(loadBalancer, "Load Balancer", "Nginx", "Distributes incoming requests using round robin")
+
+System_Boundary(commentsSystem, "Comments System") {
+    Container(commentsService, "Comments Service", "Go", "Handles posts comments", $tags="webApp")
+    Container(commentsWorker, "Comments Worker", "Go", "Produces events to Kafka to update data", $tags="worker")
+    ContainerDb(commentsDatabase, "Comments Database", "PostgreSQL", "Stores comments information", $tags="db")
+}
+
+Container_Boundary(externalSystems, "External Systems") {
+    Container(usersSystem, "Users System", "Software System", "Handles users information")
+    Container(postsSystem, "Posts System", "Software System", "Stores information about users posts")
+}
+
+ContainerQueue(messageQueue, "Events Queue", "Apache Kafka", "Handles events related to comments")
+
+Rel(user, loadBalancer, "Uses", "REST Request")
+Rel(loadBalancer, commentsService, "Forwards requests to", "REST")
+
+Rel(commentsService, commentsDatabase, "Reads/Writes comments data", "SQL")
+Rel(commentsService, commentsWorker, "Writes comments counter updates", "gRPC")
+
+Rel(commentsService, usersSystem, "Get users base info", "gRPC")
+Rel(commentsService, postsSystem, "Pass info about comments", "gRPC")
+
+Rel_U(messageQueue, postsSystem, "Publishes", "Events about new comments")
+Rel_D(commentsWorker, messageQueue, "Publishes to", "Following events")
+
+@enduml

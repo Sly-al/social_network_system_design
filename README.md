@@ -57,6 +57,64 @@
     - Подсистема поиска:
         - Просмотр рекомендации: 347 * (200 * 2Б + 50Б) = 156Мб/с
 
+## Архитектура проекта
+
+<p align="center">
+    </br><b>Level 1.</b> System context diagram</br></br>
+</p>
+
+<p align="center">
+  <img src="architecture/context.png" />
+</p>
+
+<p align="center">
+    </br><b>Level 2.</b> Users system container diagram</br></br>
+</p> 
+
+<p align="center">
+  <img src="architecture/users/users.png" />
+</p>
+
+<p align="center">
+    </br><b>Level 2.</b> Posts system container diagram</br></br>
+</p> 
+
+<p align="center">
+  <img src="architecture/posts/posts.png" />
+</p>
+
+<p align="center">
+    </br><b>Level 2.</b> Comments system container diagram</br></br>
+</p> 
+
+<p align="center">
+  <img src="architecture/comments/comments.png" />
+</p>
+
+<p align="center">
+    </br><b>Level 2.</b> Follows system container diagram</br></br>
+</p> 
+
+<p align="center">
+  <img src="architecture/follows/follows.png" />
+</p>
+
+<p align="center">
+    </br><b>Level 2.</b> Likes system container diagram</br></br>
+</p> 
+
+<p align="center">
+  <img src="architecture/likes/likes.png" />
+</p>
+
+<p align="center">
+    </br><b>Level 2.</b> Comments system container diagram</br></br>
+</p> 
+
+<p align="center">
+  <img src="architecture/comments/comments.png" />
+</p>
+
 ## Оценка использования дисков
 
 - Подсистема медиа

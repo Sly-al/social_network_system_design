@@ -1,0 +1,33 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User", "A user of the social media platform")
+
+Container(loadBalancer, "Load Balancer", "Nginx", "Distributes incoming requests using round robin")
+
+System_Boundary(followsSystem, "Follows System") {
+    Container(followsService, "Follows Service", "Go", "Handles users subscriptions", $tags="webApp")
+    Container(followsWorker, "Follows Worker", "Go", "Consumes events from Kafka to update data", $tags="worker")
+    ContainerDb(followsDatabase, "Follows Database", "PostgreSQL", "Stores user page information", $tags="db")
+    ContainerDb(followsCache, "Follows Cache", "Redis", "Caches user metadata like followers/followings counters", $tags="db")
+}
+
+Container_Boundary(externalSystems, "External Systems") {
+    Container(usersSystem, "Users System", "Software System", "Stores information about users")
+}
+
+ContainerQueue(messageQueue, "Events Queue", "Apache Kafka", "Handles events related to user follow actions")
+
+Rel(user, loadBalancer, "Uses", "REST Request")
+Rel(loadBalancer, followsService, "Forwards requests to", "REST")
+
+Rel(followsService, followsDatabase, "Reads/Writes users subscriptions", "SQL")
+Rel(followsService, followsCache, "Reads cache follower/following", "Redis Protocol")
+Rel(followsService, followsWorker, "New followers events", "gRPC")
+
+Rel(followsService, usersSystem, "Pass users subscriptions", "gRPC")
+
+Rel_D(followsWorker, messageQueue, "Publishes events about new followings")
+Rel_U(messageQueue, usersSystem, "Subscribes to new following events")
+
+@enduml
