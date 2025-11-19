@@ -7,7 +7,6 @@ Container(loadBalancer, "Load Balancer", "Nginx", "Distributes incoming requests
 
 System_Boundary(usersSystem, "Users System") {
     Container(usersService, "Users Service", "Go", "Handles user pages and interactions", $tags="webApp")
-    Container(usersWorker, "Users Worker", "Go", "Consumes events from Kafka to update data", $tags="worker")
     ContainerDb(usersDatabase, "Users Database", "PostgreSQL", "Stores user page information", $tags="db")
     ContainerDb(usersCache, "Users Cache", "Redis", "Caches user metadata like followers/followings counters", $tags="db")
 }
@@ -19,21 +18,16 @@ Container_Boundary(externalSystems, "External Systems") {
     Container(commentsSystem, "Comments System", "Software System", "Handles posts comments", $tags="webApp")
 }
 
-ContainerQueue(messageQueue, "Events Queue", "Apache Kafka", "Handles events related to user follow actions")
 
 Rel(user, loadBalancer, "Uses", "REST Request")
 Rel(loadBalancer, usersService, "Forwards requests to", "REST")
 
 Rel(usersService, usersDatabase, "Reads/Writes user data", "SQL")
 Rel(usersService, usersCache, "Reads follower/following counters", "Redis Protocol")
-Rel(usersService, usersWorker, "Reads follower/following counters", "gRPC")
 
 Rel(usersService, mediaSystem, "Uploads user avatars", "gRPC")
 Rel(usersService, followsSystem, "Fetches follower data on cache miss", "gRPC")
 Rel(usersService, likesSystem, "Passes users data", "gRPC")
 Rel(usersService, commentsSystem, "Passes users data", "gRPC")
-
-Rel_D(followsSystem, messageQueue, "Publishes", "Events about new followings")
-Rel_U(messageQueue, usersWorker, "Subscribes to", "Following events")
 
 @enduml

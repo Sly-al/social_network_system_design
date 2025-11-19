@@ -15,7 +15,6 @@ System_Boundary(postsSystem, "Posts System") {
 
 Container_Boundary(externalSystems, "External Systems") {
     Container(mediaSystem, "Media System", "Handles storage and delivery of images")
-    Container(commentsSystem, "Comments System", "Software System", "Manages comments")
     Container(likesSystem, "Likes System", "Software System", "Manages likes")
 }
 
@@ -25,15 +24,14 @@ Rel(user, loadBalancer, "Uses", "HTTPS")
 Rel(loadBalancer, postsService, "Proxies requests to", "HTTP/REST")
 
 Rel(postsService, postsDatabase, "Reads from and writes to", "SQL")
-Rel(postsService, postsCache, "Reads and writes counters/metadata", "Redis Protocol")
-Rel(postsService, postsWorker, "Internal kafka events", "gRPC")
+Rel(postsService, postsCache, "Reads/writes reactions", "Redis Protocol")
+Rel_U(postsWorker, postsService, "Update reactions by post")
+Rel_D(postsService, messageQueue, "Publishes `post_event.create`", "Kafka")
 
 Rel(postsService, mediaSystem, "Uploads/retrieves media for posts", "gRPC")
-Rel(postsService, commentsSystem, "Fetches comments count (on cache miss)", "gRPC")
 Rel(postsService, likesSystem, "Fetches likes count (on cache miss)", "gRPC")
 
-Rel(commentsSystem, messageQueue, "Publishes", "CommentCreated, CommentDeleted")
-Rel(likesSystem, messageQueue, "Publishes", "LikeAdded, LikeRemoved")
-Rel(messageQueue, postsWorker, "Subscribes to", "CommentCreated, LikeAdded, ...")
+Rel_D(likesSystem, messageQueue, "Publishes `like_by_post_event.create`", "Kafka")
+Rel_U(messageQueue, postsWorker, "Consumes `like_by_post_event.create`", "Kafka")
 
 @enduml

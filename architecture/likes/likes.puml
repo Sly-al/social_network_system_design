@@ -7,7 +7,6 @@ Container(loadBalancer, "Load Balancer", "Nginx", "Distributes incoming requests
 
 System_Boundary(likesSystem, "Likes System") {
     Container(likesService, "Likes Service", "Go", "Handles posts likes", $tags="webApp")
-    Container(likesWorker, "Likes Worker", "Go", "Produces events to Kafka to update data", $tags="worker")
     ContainerDb(likesDatabase, "Likes Database", "PostgreSQL", "Stores likes information", $tags="db")
 }
 
@@ -22,12 +21,11 @@ Rel(user, loadBalancer, "Uses", "REST Request")
 Rel(loadBalancer, likesService, "Forwards requests to", "REST")
 
 Rel(likesService, likesDatabase, "Reads/Writes likes data", "SQL")
-Rel(likesService, likesWorker, "Writes likes counter updates", "gRPC")
+Rel(likesService, messageQueue, "Publishes `like_by_post_event.create`", "Kafka")
 
 Rel(likesService, usersSystem, "Get users base info", "gRPC")
 Rel(likesService, postsSystem, "Pass info about likes", "gRPC")
 
-Rel_U(messageQueue, postsSystem, "Publishes", "Events about new likes")
-Rel_D(likesWorker, messageQueue, "Publishes to", "Following events")
+Rel(postsSystem, messageQueue, "Consumes `like_by_post_event.create`", "Kafka")
 
 @enduml
