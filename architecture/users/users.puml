@@ -1,0 +1,33 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User", "A user of the social media platform")
+
+Container(loadBalancer, "Load Balancer", "Nginx", "Distributes incoming requests using round robin")
+
+System_Boundary(usersSystem, "Users System") {
+    Container(usersService, "Users Service", "Go", "Handles user pages and interactions", $tags="webApp")
+    ContainerDb(usersDatabase, "Users Database", "PostgreSQL", "Stores user page information", $tags="db")
+    ContainerDb(usersCache, "Users Cache", "Redis", "Caches user metadata like followers/followings counters", $tags="db")
+}
+
+Container_Boundary(externalSystems, "External Systems") {
+    Container(mediaSystem, "Media System", "Software System", "Handles media operations")
+    Container(followsSystem, "Follows System", "Software System", "Stores information about users' followers and followings")
+    Container(likesSystem, "Likes System", "Software System", "Handles posts likes", $tags="webApp")
+    Container(commentsSystem, "Comments System", "Software System", "Handles posts comments", $tags="webApp")
+}
+
+
+Rel(user, loadBalancer, "Uses", "REST Request")
+Rel(loadBalancer, usersService, "Forwards requests to", "REST")
+
+Rel(usersService, usersDatabase, "Reads/Writes user data", "SQL")
+Rel(usersService, usersCache, "Reads follower/following counters", "Redis Protocol")
+
+Rel(usersService, mediaSystem, "Uploads user avatars", "gRPC")
+Rel(usersService, followsSystem, "Fetches follower data on cache miss", "gRPC")
+Rel(usersService, likesSystem, "Passes users data", "gRPC")
+Rel(usersService, commentsSystem, "Passes users data", "gRPC")
+
+@enduml

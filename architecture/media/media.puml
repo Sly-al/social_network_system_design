@@ -1,0 +1,27 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User", "A user of the social media platform")
+
+Container(loadBalancer, "Load Balancer", "Nginx", "Distributes incoming requests using round robin")
+
+System_Boundary(mediaSystem, "Media System") {
+    Container(mediaService, "Media Service", "Go", "Handles posts media", $tags="webApp")
+    ContainerDb(mediaDatabase, "Media Database", "Yandex Object Storage", "Stores media", $tags="db")
+}
+
+Container_Boundary(externalSystems, "External Systems") {
+    Container(usersSystem, "Users System", "Software System", "Handles users information")
+    Container(postsSystem, "Posts System", "Software System", "Stores information about users posts")
+}
+
+
+Rel(user, loadBalancer, "Uses", "REST Request")
+Rel(loadBalancer, mediaService, "Forwards requests to", "REST")
+
+Rel(mediaService, mediaDatabase, "Reads/Writes media data", "SQL")
+
+Rel(mediaService, usersSystem, "Get users base info", "gRPC")
+Rel(mediaService, postsSystem, "Pass info about media", "gRPC")
+
+@enduml

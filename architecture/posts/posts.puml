@@ -1,0 +1,37 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+
+Person(user, "User", "A user of the social media platform")
+
+Container(loadBalancer, "Load Balancer", "Nginx", "Distributes incoming HTTP requests to Posts Service instances")
+
+System_Boundary(postsSystem, "Posts System") {
+    Container(postsService, "Posts Service", "Go", "Handles core business logic for posts", $tags="webApp")
+    Container(postsWorker, "Posts Worker", "Go", "Consumes events from Kafka to update data", $tags="worker")
+    ContainerDb(postsDatabase, "Posts Database", "PostgreSQL", "Stores posts content, metadata and author info", $tags="db")
+    ContainerDb(postsCache, "Posts Cache", "Redis", "Caches posts metadata and aggregated counters (likes, comments)", $tags="db")
+}
+
+Container_Boundary(externalSystems, "External Systems") {
+    Container(mediaSystem, "Media System", "Handles storage and delivery of images")
+    Container(likesSystem, "Likes System", "Software System", "Manages likes")
+}
+
+ContainerQueue(messageQueue, "Events", "Apache Kafka", "Transport for all service-to-service events")
+
+Rel(user, loadBalancer, "Uses", "HTTPS")
+Rel(loadBalancer, postsService, "Proxies requests to", "HTTP/REST")
+
+Rel(postsService, postsDatabase, "Reads from and writes to", "SQL")
+Rel(postsService, postsCache, "Reads/writes reactions", "Redis Protocol")
+Rel_U(postsWorker, postsService, "Update reactions by post")
+Rel_D(postsService, messageQueue, "Publishes `post_event.create`", "Kafka")
+
+Rel(postsService, mediaSystem, "Uploads/retrieves media for posts", "gRPC")
+Rel(postsService, likesSystem, "Fetches likes count (on cache miss)", "gRPC")
+
+Rel_D(likesSystem, messageQueue, "Publishes `like_by_post_event.create`", "Kafka")
+Rel_U(messageQueue, postsWorker, "Consumes `like_by_post_event.create`", "Kafka")
+
+@enduml
